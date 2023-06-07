@@ -2,7 +2,7 @@
 
 namespace TemplateProject.Application.Auth.Models;
 
-public sealed class AuthResponse
+public sealed record AuthResponse
 {
     public JwtResponse Jwt { get; set; }
     public RefreshTokenResponse RefreshToken { get; set; }

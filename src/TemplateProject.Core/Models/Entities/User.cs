@@ -5,6 +5,7 @@ namespace TemplateProject.Core.Models.Entities;
 public sealed class User : EntityBase<Guid>
 {
     public User(string firstname, string lastname, string email, string passwordHash)
+        : base(Guid.NewGuid())
     {
         Firstname = firstname;
         Lastname = lastname;

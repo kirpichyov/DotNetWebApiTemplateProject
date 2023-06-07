@@ -43,7 +43,7 @@ public sealed class ConfigureSwaggerOptions : IConfigureNamedOptions<SwaggerGenO
     {
         var info = new OpenApiInfo()
         {
-            Title = "ApiBlueprint API",
+            Title = "TemplateProject API",
             Version = desc.ApiVersion.ToString()
         };
 

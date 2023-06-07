@@ -2,7 +2,7 @@
 
 namespace TemplateProject.Application.Auth.Models;
 
-public sealed class RefreshTokenRequest
+public sealed record RefreshTokenRequest
 {
     public string AccessToken { get; set; }
     public Guid RefreshToken { get; set; }

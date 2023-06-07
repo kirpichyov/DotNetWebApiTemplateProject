@@ -1,6 +1,6 @@
 ﻿namespace TemplateProject.Application.Auth.Models;
 
-public sealed class UserRegisterRequest
+public sealed record UserRegisterRequest
 {
     public string Firstname { get; init; }
     public string Lastname { get; init; }

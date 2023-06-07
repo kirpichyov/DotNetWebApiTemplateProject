@@ -1,0 +1,75 @@
+name: $(BuildDefinitionName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+  - name: SkipCodeTest
+    displayName: SkipCodeTest
+    type: boolean
+    default: false
+  - name: SkipMigrationsTest
+    displayName: SkipMigrationsInspection
+    type: boolean
+    default: false
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - release/*
+
+resources:
+  - repo: self
+
+variables:
+  - group: "common"
+  # Agent VM image name
+  - name: vmImageName
+    value: "ubuntu-latest"
+
+stages:
+  - stage: Build
+    displayName: Build stage
+    jobs:
+      - job: Build
+        displayName: Build solution
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: FileTransform@1
+            displayName: Transform appsettings.json
+            inputs:
+              folderPath: "$(System.DefaultWorkingDirectory)"
+              fileType: json
+              targetFiles: |
+                src/TemplateProject.Api/appsettings.json
+          - task: DockerCompose@0
+            displayName: Build docker images
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "build"
+          - task: DockerCompose@0
+            displayName: Run database for migration tests
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a specific service"
+              dockerComposeCommand: "up"
+              detached: true
+              containerName: "migrations-test-db"
+              serviceName: "migrations-test-db"
+            condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')))
+            timeoutInMinutes: 2
+          - task: DockerCompose@0
+            displayName: Apply migrations to test database
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "up"
+              arguments: "--exit-code-from db-migrations db-migrations"
+            env:
+              DB_CONNECTION_STRING: '$(TestDatabaseConnectionString)'
+            condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')))
+            timeoutInMinutes: 5

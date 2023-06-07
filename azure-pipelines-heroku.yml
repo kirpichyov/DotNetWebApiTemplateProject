@@ -1,0 +1,129 @@
+name: $(BuildDefinitionName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+  - name: SkipCodeTest
+    displayName: SkipCodeTest
+    type: boolean
+    default: false
+  - name: SkipMigrationsTest
+    displayName: SkipMigrationsInspection
+    type: boolean
+    default: false
+  - name: ForceDeploy
+    displayName: ForceDeploy
+    type: boolean
+    default: false
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - release/*
+
+resources:
+  - repo: self
+
+variables:
+  - group: "common"
+  - group: "deployment"
+  # Agent VM image name
+  - name: vmImageName
+    value: "ubuntu-latest"
+  - name: skipIntegrationTestsDbRun
+    value: "$(TestsOptions.UseDocker)"
+
+stages:
+  - stage: Build
+    displayName: Build stage
+    jobs:
+      - job: Build
+        displayName: Build solution
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: FileTransform@1
+            displayName: Transform appsettings.json
+            inputs:
+              folderPath: "$(System.DefaultWorkingDirectory)"
+              fileType: json
+              targetFiles: |
+                src/TemplateProject.Api/appsettings.json
+                src/TemplateProject.IntegrationTests/appsettings.json
+          - task: DockerCompose@0
+            displayName: Build docker images
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "build"
+          - task: DockerCompose@0
+            displayName: Run unit tests
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "up"
+              arguments: "--exit-code-from unit-tests unit-tests"
+            condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.SkipCodeTest }}', 'false'))
+          - task: DockerCompose@0
+            displayName: Run test database
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a specific service"
+              dockerComposeCommand: "up"
+              detached: true
+              containerName: "integration-tests-db"
+              serviceName: "integration-tests-db"
+            condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+            timeoutInMinutes: 2
+          - task: DockerCompose@0
+            displayName: Apply migrations to test database
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "up"
+              arguments: "--exit-code-from db-migrations db-migrations"
+            env:
+              DB_CONNECTION_STRING: '$(TestsOptions.DatabaseConnectionString)'
+            condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+            timeoutInMinutes: 5
+          - task: DockerCompose@0
+            displayName: Run internal integration tests
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "up"
+              arguments: "--exit-code-from integration-tests integration-tests"
+            condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.SkipCodeTest }}', 'false'), eq(variables.skipIntegrationTestsDbRun, 'false'))
+            timeoutInMinutes: 30
+          - task: DockerCompose@0
+            displayName: Apply migrations to production database
+            inputs:
+              containerregistrytype: "Container Registry"
+              dockerComposeFile: "docker-compose.yml"
+              action: "Run a Docker Compose command"
+              dockerComposeCommand: "up"
+              arguments: "--exit-code-from db-migrations db-migrations"
+            env:
+              DB_CONNECTION_STRING: '$(ConnectionStrings.DatabaseContext)'
+            condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.ForceDeploy }}', 'true')))
+            timeoutInMinutes: 5
+          - task: CmdLine@2
+            displayName: Push image to heroku
+            inputs:
+              script: |
+                sudo snap install --classic heroku
+                echo CONTAINER LOGIN
+                heroku container:login
+                echo PUSH
+                heroku container:push web --app your-heroku-app-name
+                echo RELEASE
+                heroku container:release web --app your-heroku-app-name
+            env:
+              HEROKU_API_KEY: $(HerokuApiKey)
+              HEROKU_APP_NAME: $(HerokuAppName)
+            condition: and(succeeded(), or(ne(variables['Build.Reason'], 'PullRequest'), eq('${{ parameters.ForceDeploy }}', 'true')))

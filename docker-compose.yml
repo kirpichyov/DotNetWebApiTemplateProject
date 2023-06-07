@@ -1,0 +1,56 @@
+version: "3.7"
+
+services:
+  builder:
+    build:
+      context: .
+      target: build
+
+  api:
+    build:
+      context: .
+    environment:
+      ASPNETCORE_URLS: https://+:443;http://+:8080
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DatabaseContext: ${DB_CONNECTION_STRING}
+      AuthOptions__AccessTokenLifetime: ${ACCESS_TOKEN_LIFETIME}
+    ports:
+      - "5000:8080"
+      - "5001:443"
+    depends_on:
+      db-migrations:
+        condition: service_completed_successfully
+    volumes:
+      - ${APPDATA:-}/Microsoft/UserSecrets/:/root/.microsoft/usersecrets
+      - ./appdata:/appdata
+      
+  db-migrations:
+    build:
+      context: .
+      target: build
+    command: sh -c "
+      dotnet ef database update --project './TemplateProject.Api/' --startup-project './TemplateProject.Api/' --connection ' ${DB_CONNECTION_STRING} ' "
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./appdata:/appdata
+    environment:
+      DB_CONNECTION_STRING: ${DB_CONNECTION_STRING}
+      
+  postgres-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d postgres -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./postgres:/data/postgres

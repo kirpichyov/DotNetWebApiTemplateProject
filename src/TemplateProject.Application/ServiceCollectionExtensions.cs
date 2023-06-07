@@ -1,0 +1,91 @@
+﻿using MassTransit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Quartz;
+using TemplateProject.Application.Auth;
+using TemplateProject.Application.Auth.Contracts;
+using TemplateProject.Application.Auth.Validators;
+using TemplateProject.Application.Common;
+using TemplateProject.Application.Common.Contracts;
+using TemplateProject.Application.Consumers;
+using TemplateProject.Application.Hashing;
+using TemplateProject.Application.Hashing.Contracts;
+using TemplateProject.Application.Jobs;
+using TemplateProject.Application.Mapping;
+using TemplateProject.Application.Mapping.Contracts;
+using TemplateProject.Application.Profile;
+using TemplateProject.Application.Profile.Contracts;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+
+namespace TemplateProject.Application;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddApplicationServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped<IObjectsMapper, ObjectsMapper>();
+        services.AddScoped<IHashingProvider, HashingProvider>();
+        services.AddScoped<IDateTimeProvider, DateTimeProvider>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IProfileService, ProfileService>();
+
+        services.AddScoped<IAuthValidatorsAggregate, AuthValidatorsAggregate>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddBroker(this IServiceCollection services)
+    {
+        services.AddMassTransit(configurator =>
+        {
+            configurator.AddConsumer(typeof(SampleCommandConsumer));
+            
+            configurator.UsingInMemory((context, config) =>
+            {
+                config.ConfigureEndpoints(context);
+            });
+        });
+
+        return services;
+    }
+    
+    public static IServiceCollection AddJobs(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddQuartz(quartz =>
+        {
+            using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder
+                .SetMinimumLevel(LogLevel.Information)
+                .AddConsole());
+
+            quartz.SchedulerId = "Scheduler-Main";
+
+            quartz.UseMicrosoftDependencyInjectionJobFactory();
+            quartz.UseSimpleTypeLoader();
+            quartz.UseInMemoryStore();
+            quartz.UseDefaultThreadPool(tp =>
+            {
+                tp.MaxConcurrency = 5;
+            });
+                
+            quartz.ScheduleJob<SampleJob>(trigger =>
+                {
+                    var cronExpression = configuration["Jobs:SampleJobCronExpression"]!;
+
+                    trigger.WithIdentity(nameof(SampleJob))
+                        .StartNow()
+                        .WithCronSchedule(CronScheduleBuilder.CronSchedule(cronExpression));
+                }
+            );
+        });
+            
+        services.AddQuartzHostedService(options =>
+        {
+            options.WaitForJobsToComplete = true;
+        });
+
+        return services;
+    }
+}

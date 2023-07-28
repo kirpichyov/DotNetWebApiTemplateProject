@@ -7,7 +7,7 @@ using FluentAssertions.Execution;
 using Kirpichyov.FriendlyJwt.Contracts;
 using NUnit.Framework;
 using TemplateProject.Application.Mapping;
-using TemplateProject.Application.Profile;
+using TemplateProject.Application.Services;
 using TemplateProject.Tests.Common;
 
 namespace TemplateProject.UnitTests;

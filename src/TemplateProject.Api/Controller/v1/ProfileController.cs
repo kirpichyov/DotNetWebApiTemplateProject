@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TemplateProject.Application.Profile.Contracts;
-using TemplateProject.Application.Profile.Models;
+using TemplateProject.Application.Contracts;
+using TemplateProject.Application.Models.Profile;
 
 namespace TemplateProject.Api.Controller.v1;
 

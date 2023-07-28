@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using TemplateProject.Api.Configuration;
-using TemplateProject.Application.Auth.Models;
+using TemplateProject.Application.Models.Auth;
 using TemplateProject.DataAccess.Connection;
 using TemplateProject.Tests.Common;
 using Testcontainers.PostgreSql;

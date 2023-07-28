@@ -1,5 +1,5 @@
 ﻿using Bogus;
-using TemplateProject.Application.Auth.Models;
+using TemplateProject.Application.Models.Auth;
 using TemplateProject.Core.Models.Entities;
 
 namespace TemplateProject.Tests.Common;

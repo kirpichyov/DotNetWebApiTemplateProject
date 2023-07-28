@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TemplateProject.Application.Mapping.Contracts;
-using TemplateProject.Application.Profile.Models;
+using TemplateProject.Application.Models.Profile;
 using TemplateProject.Core.Models.Entities;
 
 namespace TemplateProject.Application.Mapping;

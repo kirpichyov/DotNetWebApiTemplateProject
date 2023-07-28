@@ -1,5 +1,5 @@
 ﻿using Flurl.Http;
-using TemplateProject.Application.Auth.Models;
+using TemplateProject.Application.Models.Auth;
 
 namespace TemplateProject.IntegrationTests.Testing;
 

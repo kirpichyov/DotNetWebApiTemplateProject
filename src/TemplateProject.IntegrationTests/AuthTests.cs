@@ -7,7 +7,7 @@ using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using TemplateProject.Application.Auth.Models;
+using TemplateProject.Application.Models.Auth;
 using TemplateProject.DataAccess.Connection;
 using TemplateProject.IntegrationTests.Testing;
 using TemplateProject.Tests.Common;

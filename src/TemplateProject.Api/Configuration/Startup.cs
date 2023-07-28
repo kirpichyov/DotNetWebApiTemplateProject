@@ -18,7 +18,7 @@ using TemplateProject.Api.Configuration.Converters;
 using TemplateProject.Api.Configuration.Middleware.Filters;
 using TemplateProject.Api.Configuration.Swagger;
 using TemplateProject.Application;
-using TemplateProject.Application.Auth.Validators;
+using TemplateProject.Application.Validators.Auth;
 using TemplateProject.Core.Options;
 using TemplateProject.DataAccess;
 

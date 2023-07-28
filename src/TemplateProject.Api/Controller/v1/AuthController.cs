@@ -3,8 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TemplateProject.Application.Auth.Contracts;
-using TemplateProject.Application.Auth.Models;
+using TemplateProject.Application.Contracts;
+using TemplateProject.Application.Models.Auth;
 using TemplateProject.Core.Models.Api;
 
 namespace TemplateProject.Api.Controller.v1;

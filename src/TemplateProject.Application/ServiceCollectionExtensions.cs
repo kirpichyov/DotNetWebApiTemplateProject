@@ -7,8 +7,8 @@ using TemplateProject.Application.Consumers;
 using TemplateProject.Application.Contracts;
 using TemplateProject.Application.Jobs;
 using TemplateProject.Application.Mapping;
+using TemplateProject.Application.Security;
 using TemplateProject.Application.Services;
-using TemplateProject.Application.Validators.Auth;
 using TemplateProject.Core.Common;
 using TemplateProject.Core.Contracts;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -29,6 +29,14 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IFluentValidatorFactory, FluentValidatorFactory>();
 
+        return services;
+    }
+    
+    public static IServiceCollection AddSecurityServices(this IServiceCollection services)
+    {
+        services.AddScoped<SecurityContext>();
+        services.AddScoped<ISecurityContext>(sp => sp.GetRequiredService<SecurityContext>());
+        
         return services;
     }
 

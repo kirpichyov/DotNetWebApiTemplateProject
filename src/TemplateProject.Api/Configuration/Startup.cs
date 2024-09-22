@@ -25,6 +25,7 @@ using TemplateProject.Api.Configuration.Converters;
 using TemplateProject.Api.Configuration.Middleware.Filters;
 using TemplateProject.Api.Configuration.Swagger;
 using TemplateProject.Application;
+using TemplateProject.Application.Security;
 using TemplateProject.Application.Validators.Auth;
 using TemplateProject.Core.Options;
 using TemplateProject.DataAccess;
@@ -55,6 +56,7 @@ public class Startup
 
 		services.AddDataAccessServices(_configuration, _environment);
 		services.AddApplicationServices(_configuration);
+		services.AddSecurityServices();
 		services.AddBroker();
 		services.AddJobs(_configuration);
 
@@ -161,12 +163,12 @@ public class Startup
 		{
 			options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
 			{
-				var jwtTokenReader = httpContext.RequestServices.GetRequiredService<IJwtTokenReader>();
+				var securityContext = httpContext.RequestServices.GetRequiredService<SecurityContext>();
 				
 				diagnosticContext.Set("UserAgent", httpContext.Request.Headers.UserAgent.ToString());
 				diagnosticContext.Set("HttpRequestClientHostIP", httpContext.Connection.RemoteIpAddress);
 				diagnosticContext.Set("HttpRequestUrl", httpContext.Request.GetDisplayUrl());
-				diagnosticContext.Set("UserId", jwtTokenReader.UserId);
+				diagnosticContext.Set("UserId", securityContext.UserId);
 			};
 		});
 
@@ -174,6 +176,7 @@ public class Startup
 		
 		app.UseAuthentication();
 		app.UseAuthorization();
+		app.UseMiddleware<SecurityContextInitializerMiddleware>();
 
 		app.UseEndpoints(endpoints =>
 		{

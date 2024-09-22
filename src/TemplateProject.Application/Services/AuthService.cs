@@ -24,6 +24,7 @@ public sealed class AuthService : IAuthService
     private readonly AuthOptions _authOptions;
     private readonly IJwtTokenVerifier _jwtTokenVerifier;
     private readonly ILogger<AuthService> _logger;
+    private readonly IFluentValidatorFactory _fluentValidatorFactory;
 
     public AuthService(
         IUnitOfWork unitOfWork,
@@ -31,18 +32,22 @@ public sealed class AuthService : IAuthService
         IDateTimeProvider dateTimeProvider,
         IOptions<AuthOptions> authOptions,
         IJwtTokenVerifier jwtTokenVerifier,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IFluentValidatorFactory fluentValidatorFactory)
     {
         _unitOfWork = unitOfWork;
         _hashingProvider = hashingProvider;
         _dateTimeProvider = dateTimeProvider;
         _jwtTokenVerifier = jwtTokenVerifier;
         _logger = logger;
+        _fluentValidatorFactory = fluentValidatorFactory;
         _authOptions = authOptions.Value;
     }
 
     public async Task<UserCreatedResponse> CreateUser(UserRegisterRequest request)
     {
+        _fluentValidatorFactory.ValidateAndThrow(request);
+        
         var emailExists = await _unitOfWork.Users.IsEmailExists(request.Email);
         if (emailExists)
         {
@@ -64,6 +69,8 @@ public sealed class AuthService : IAuthService
 
     public async Task<AuthResponse> GenerateJwtSession(SignInRequest request)
     {
+        _fluentValidatorFactory.ValidateAndThrow(request);
+        
         var user = await _unitOfWork.Users.TryGet(request.Email, withTracking: true);
         if (user is null || !_hashingProvider.Verify(request.Password, user.PasswordHash))
         {
@@ -76,6 +83,8 @@ public sealed class AuthService : IAuthService
 
     public async Task<AuthResponse> RefreshJwtSession(RefreshTokenRequest request)
     {
+        _fluentValidatorFactory.ValidateAndThrow(request);
+        
         var refreshToken = await _unitOfWork.RefreshTokens.FindById(request.RefreshToken, useTracking: true);
         var jwtVerificationResult = EnsureRefreshRequestIsValid(request, refreshToken);
 

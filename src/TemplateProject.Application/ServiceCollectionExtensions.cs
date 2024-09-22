@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IProfileService, ProfileService>();
 
-        services.AddScoped<IAuthValidatorsAggregate, AuthValidatorsAggregate>();
+        services.AddScoped<IFluentValidatorFactory, FluentValidatorFactory>();
 
         return services;
     }

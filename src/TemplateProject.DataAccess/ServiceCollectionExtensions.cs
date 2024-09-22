@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.DataAccess.Connection;
-using TemplateProject.DataAccess.Contracts;
 using TemplateProject.DataAccess.Interceptors;
 using TemplateProject.DataAccess.Repositories;
 

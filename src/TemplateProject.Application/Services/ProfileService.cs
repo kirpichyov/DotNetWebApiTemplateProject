@@ -5,7 +5,7 @@ using TemplateProject.Application.Contracts;
 using TemplateProject.Application.Extensions;
 using TemplateProject.Application.Mapping;
 using TemplateProject.Application.Models.Profile;
-using TemplateProject.DataAccess.Contracts;
+using TemplateProject.Core.Contracts.Repositories;
 
 namespace TemplateProject.Application.Services;
 

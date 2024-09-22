@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.Core.Models.Entities;
 using TemplateProject.DataAccess.Connection;
-using TemplateProject.DataAccess.Contracts;
 using TemplateProject.DataAccess.Extensions;
 
 namespace TemplateProject.DataAccess.Repositories;

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.DataAccess.Connection;
-using TemplateProject.DataAccess.Contracts;
 
 namespace TemplateProject.DataAccess.Repositories;
 

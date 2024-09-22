@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 using TemplateProject.Application.Contracts;
 using TemplateProject.Application.Models.Auth;
 using TemplateProject.Core.Contracts;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.Core.Exceptions;
 using TemplateProject.Core.Models.Entities;
 using TemplateProject.Core.Options;
-using TemplateProject.DataAccess.Contracts;
 
 namespace TemplateProject.Application.Services;
 

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TemplateProject.Core.Models.Entities;
 
-namespace TemplateProject.DataAccess.Contracts;
+namespace TemplateProject.Core.Contracts.Repositories;
 
 public interface IUserRepository : IRepositoryBase<User>
 {

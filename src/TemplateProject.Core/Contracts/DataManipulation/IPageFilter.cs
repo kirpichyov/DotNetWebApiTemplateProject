@@ -1,4 +1,4 @@
-﻿namespace TemplateProject.DataAccess.DataManipulation;
+﻿namespace TemplateProject.Core.Contracts.DataManipulation;
 
 public interface IPageFilter<TItem> : IExpressionFilter<TItem>
 {

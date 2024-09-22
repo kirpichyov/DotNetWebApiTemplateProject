@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace TemplateProject.DataAccess.Contracts;
+namespace TemplateProject.Core.Contracts.Repositories;
 
 public interface IUnitOfWork
 {

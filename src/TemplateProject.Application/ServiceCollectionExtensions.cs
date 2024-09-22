@@ -57,7 +57,6 @@ public static class ServiceCollectionExtensions
 
             quartz.SchedulerId = "Scheduler-Main";
 
-            quartz.UseMicrosoftDependencyInjectionJobFactory();
             quartz.UseSimpleTypeLoader();
             quartz.UseInMemoryStore();
             quartz.UseDefaultThreadPool(tp =>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.DataAccess.Connection;
-using TemplateProject.DataAccess.Contracts;
 
 namespace TemplateProject.DataAccess.Repositories;
 

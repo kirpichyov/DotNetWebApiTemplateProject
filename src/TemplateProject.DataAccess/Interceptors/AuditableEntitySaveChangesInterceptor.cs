@@ -38,6 +38,7 @@ public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesIntercept
     {
         using var scope = _serviceProvider.CreateScope();
         var jwtTokenReader = scope.ServiceProvider.GetRequiredService<IJwtTokenReader>();
+        var dateTimeProvider = scope.ServiceProvider.GetRequiredService<IDateTimeProvider>();
         
         var entries = dbContext.ChangeTracker.Entries()
             .Where(e => e is { Entity: IAuditEntity, State: EntityState.Added or EntityState.Modified });
@@ -50,11 +51,11 @@ public sealed class AuditableEntitySaveChangesInterceptor : SaveChangesIntercept
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entity.CreatedAtUtc = DateTime.UtcNow;
+                    entity.CreatedAtUtc = dateTimeProvider.UtcNow;
                     entity.CreatedBy = userEmail;
                     break;
                 case EntityState.Modified:
-                    entity.UpdatedAtUtc = DateTime.UtcNow;
+                    entity.UpdatedAtUtc = dateTimeProvider.UtcNow;
                     entity.UpdatedBy = userEmail;
                     break;
             }

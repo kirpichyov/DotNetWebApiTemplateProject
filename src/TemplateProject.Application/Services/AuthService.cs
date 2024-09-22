@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Kirpichyov.FriendlyJwt;
 using Kirpichyov.FriendlyJwt.Contracts;
 using Kirpichyov.FriendlyJwt.RefreshTokenUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TemplateProject.Application.Contracts;
 using TemplateProject.Application.Models.Auth;
@@ -21,18 +23,21 @@ public sealed class AuthService : IAuthService
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly AuthOptions _authOptions;
     private readonly IJwtTokenVerifier _jwtTokenVerifier;
+    private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         IUnitOfWork unitOfWork,
         IHashingProvider hashingProvider,
         IDateTimeProvider dateTimeProvider,
         IOptions<AuthOptions> authOptions,
-        IJwtTokenVerifier jwtTokenVerifier)
+        IJwtTokenVerifier jwtTokenVerifier,
+        ILogger<AuthService> logger)
     {
         _unitOfWork = unitOfWork;
         _hashingProvider = hashingProvider;
         _dateTimeProvider = dateTimeProvider;
         _jwtTokenVerifier = jwtTokenVerifier;
+        _logger = logger;
         _authOptions = authOptions.Value;
     }
 
@@ -77,13 +82,21 @@ public sealed class AuthService : IAuthService
         var userId = Guid.Parse(jwtVerificationResult.UserId);
         var user = await _unitOfWork.Users.TryGet(userId, withTracking: true);
 
-        var authResponse = await _unitOfWork.CommitTransactionAsync(() =>
+        try
         {
-            _unitOfWork.RefreshTokens.Remove(refreshToken);
-            return CreateAuthResponse(user);
-        });
-
-        return authResponse;
+            var authResponse = await _unitOfWork.CommitTransactionAsync(() =>
+            {
+                _unitOfWork.RefreshTokens.Remove(refreshToken);
+                return CreateAuthResponse(user);
+            });
+            
+            return authResponse;
+        }
+        catch (DbUpdateConcurrencyException dbUpdateConcurrencyException)
+        {
+            _logger.LogError(dbUpdateConcurrencyException, "Failed to refresh token");
+            throw new ConflictException("Token was already refreshed concurrently");
+        }
     }
 
     private JwtVerificationResult EnsureRefreshRequestIsValid(RefreshTokenRequest request, RefreshToken refreshToken)

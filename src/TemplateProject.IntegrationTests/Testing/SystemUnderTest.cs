@@ -20,7 +20,7 @@ public static class SystemUnderTest
 {
     private static TestServer _testServer;
     private static PostgreSqlContainer _postgreSqlContainer;
-    private static DataGenerator _dataGenerator = new();
+    private static readonly DataGenerator DataGenerator = new();
     
     private enum DatabaseMode
     {
@@ -92,7 +92,7 @@ public static class SystemUnderTest
 
     public static async Task<AuthorizedClient> GetAuthorizedClient()
     {
-        var signUpRequest = _dataGenerator.GivenUserRegisterRequest();
+        var signUpRequest = DataGenerator.GivenUserRegisterRequest();
 
         var client = GetAnonymousClient();
 

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using TemplateProject.Core.Contracts.DataManipulation;
+using TemplateProject.Core.Contracts.Repositories;
 using TemplateProject.Core.Models.Dtos.Common;
 
 namespace TemplateProject.DataAccess.DataManipulation;

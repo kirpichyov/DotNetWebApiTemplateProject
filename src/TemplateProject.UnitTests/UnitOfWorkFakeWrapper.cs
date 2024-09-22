@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FakeItEasy;
-using TemplateProject.DataAccess.Contracts;
+using TemplateProject.Core.Contracts.Repositories;
 
 namespace TemplateProject.UnitTests;
 

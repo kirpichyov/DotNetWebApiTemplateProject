@@ -5,7 +5,8 @@ using TemplateProject.Application.Contracts;
 using TemplateProject.Application.Extensions;
 using TemplateProject.Application.Mapping;
 using TemplateProject.Application.Models.Profile;
-using TemplateProject.DataAccess.Contracts;
+using TemplateProject.Application.Security;
+using TemplateProject.Core.Contracts.Repositories;
 
 namespace TemplateProject.Application.Services;
 
@@ -13,26 +14,26 @@ public sealed class ProfileService : IProfileService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IObjectsMapper _objectsMapper;
-    private readonly IJwtTokenReader _jwtTokenReader;
+    private readonly ISecurityContext _securityContext;
 
     public ProfileService(
         IUnitOfWork unitOfWork,
         IObjectsMapper objectsMapper,
-        IJwtTokenReader jwtTokenReader)
+        ISecurityContext securityContext)
     {
         _unitOfWork = unitOfWork;
         _objectsMapper = objectsMapper;
-        _jwtTokenReader = jwtTokenReader;
+        _securityContext = securityContext;
     }
 
     public async Task<CurrentUserProfileResponse> GetCurrentProfile()
     {
-        if (!_jwtTokenReader.IsLoggedIn)
+        if (!_securityContext.IsAuthenticated)
         {
             throw new InvalidOperationException("Authorization is required for this operation");
         }
 
-        var currentUserId = _jwtTokenReader.GetUserId();
+        var currentUserId = _securityContext.UserId;
         var currentUser = await _unitOfWork.Users.TryGet(currentUserId, withTracking: false);
 
         return _objectsMapper.ToCurrentUserProfileResponse(currentUser);

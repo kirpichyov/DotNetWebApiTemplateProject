@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace TemplateProject.DataAccess.Contracts;
+namespace TemplateProject.Core.Contracts.Repositories;
 
 public interface IRepositoryBase<in TEntity> 
     where TEntity : class

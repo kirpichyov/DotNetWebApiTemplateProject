@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using TemplateProject.Core.Models.Dtos.Common;
 
-namespace TemplateProject.DataAccess.DataManipulation;
+namespace TemplateProject.Core.Contracts.DataManipulation;
 
 public interface IExpressionFilter<TItem>
 {

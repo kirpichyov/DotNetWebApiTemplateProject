@@ -7,6 +7,7 @@ using FluentAssertions.Execution;
 using Kirpichyov.FriendlyJwt.Contracts;
 using NUnit.Framework;
 using TemplateProject.Application.Mapping;
+using TemplateProject.Application.Security;
 using TemplateProject.Application.Services;
 using TemplateProject.Tests.Common;
 
@@ -19,13 +20,13 @@ public sealed class ProfileServiceTests
     private readonly DataGenerator _dataGenerator = new();
 
     private UnitOfWorkFakeWrapper _unitOfWorkFakeWrapper;
-    private Fake<IJwtTokenReader> _jwtTokenReaderFake;
+    private Fake<ISecurityContext> _securityContextFake;
 
     [SetUp]
     public void Setup()
     {
         _unitOfWorkFakeWrapper = new UnitOfWorkFakeWrapper();
-        _jwtTokenReaderFake = new Fake<IJwtTokenReader>();
+        _securityContextFake = new Fake<ISecurityContext>();
     }
 
     [Test]
@@ -34,12 +35,12 @@ public sealed class ProfileServiceTests
         // Arrange
         var user = _dataGenerator.GivenUser();
 
-        _jwtTokenReaderFake
+        _securityContextFake
             .CallsTo(reader => reader.UserId)
-            .Returns(user.Id.ToString());
+            .Returns(user.Id);
         
-        _jwtTokenReaderFake
-            .CallsTo(reader => reader.IsLoggedIn)
+        _securityContextFake
+            .CallsTo(reader => reader.IsAuthenticated)
             .Returns(true);
 
         _unitOfWorkFakeWrapper.Users
@@ -63,8 +64,8 @@ public sealed class ProfileServiceTests
     public async Task GetCurrentProfile_UserIsUnauthorized_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        _jwtTokenReaderFake
-            .CallsTo(reader => reader.IsLoggedIn)
+        _securityContextFake
+            .CallsTo(reader => reader.IsAuthenticated)
             .Returns(false);
 
         var sut = BuildSut();
@@ -80,5 +81,5 @@ public sealed class ProfileServiceTests
     public ProfileService BuildSut() => new(
         _unitOfWorkFakeWrapper.FakedObject,
         new ObjectsMapper(),
-        _jwtTokenReaderFake.FakedObject);
+        _securityContextFake.FakedObject);
 }
